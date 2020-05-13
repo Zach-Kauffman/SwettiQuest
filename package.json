@@ -1,0 +1,8 @@
+{
+    “name”: “SwettiQuest”,
+    “version”: “1.0.0”,
+    “description”: “Swetti Boy's Quest”,
+    “main”: swettiquest.py”,
+    “author”: “Zach Kauffman”,
+    “dependencies”: {}
+}

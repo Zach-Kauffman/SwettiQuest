@@ -1,0 +1,2 @@
+class userData:
+    users = {}
