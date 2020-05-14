@@ -17,5 +17,4 @@ if __name__ == '__main__':
 async def on_ready():
     print(f'\n\nLogged in as: {bot.user.name} - {bot.user.id}\nVersion: {discord.__version__}\n')
 
-
 bot.run(token, bot=True, reconnect=True)

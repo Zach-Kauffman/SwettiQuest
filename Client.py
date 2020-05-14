@@ -4,6 +4,9 @@ from Rapper import Rapper
 import json
 import string
 import os
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json
+from dacite import from_dict
 
 class ClientCog(commands.Cog):
     def __init__(self, bot):
@@ -75,7 +78,7 @@ class ClientCog(commands.Cog):
                 saveUserData(self.users)
 
 def setup(bot):
-    import ipdb;ipdb.set_trace()
+    #import ipdb;ipdb.set_trace()
     if not os.path.exists("userdata.txt"):
         saveUserData({})
     bot.add_cog(ClientCog(bot))
@@ -86,10 +89,17 @@ def parseJSON(fpath):
         return data
 
 def saveUserData(users):
-    json_dict = {key: user.to_json() for key, user in users.items()}
+    #json_dict = {key: user.to_json() for key, user in users.items()}
+    json_dict = {}
+    for key, user in users.items():
+        json_dict[key] = user.to_dict()
     with open("userdata.txt", 'w') as f:
-        import ipdb;ipdb.set_trace()
         json.dump(json_dict, f)
 
+#loads dict of dicts, converts to dict of rappers
 def loadUserData():
-    return json.load(open('userdata.txt', 'r'))
+    users = json.load(open('userdata.txt', 'r'))
+    rappers = {}
+    for key, dic in users.items():
+        rappers[int(key)] = from_dict(data_class=Rapper, data=dic)
+    return rappers

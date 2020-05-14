@@ -2,7 +2,7 @@ from typing import Dict
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
-UserID = str
+UserID = int
 Dollars = int
 Strain = str
 Grams = float
