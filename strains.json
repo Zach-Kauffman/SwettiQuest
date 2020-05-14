@@ -1,0 +1,40 @@
+{
+    "strains": [
+        {   
+            "name":"Poop OG",
+            "price":1
+        },
+        {   
+            "name":"Tropicana",
+            "price":5
+        },
+        {   
+            "name":"Chem Dawg",
+            "price":20
+        },
+        {   
+            "name":"New Year's Eve",
+            "price":69
+        },
+        {   
+            "name":"Lemon Sour Diesel",
+            "price":200
+        },
+        {   
+            "name":"Platinum Girlscout",
+            "price":420
+        },
+        {   
+            "name":"Obama Kush",
+            "price":1000
+        },
+        {   
+            "name":"Moon Rocks",
+            "price":2500
+        },
+        {   
+            "name":"Triple OG Ice Cream Killa Kush",
+            "price":10000
+        }
+    ]
+}

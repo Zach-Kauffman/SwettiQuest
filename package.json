@@ -2,7 +2,7 @@
     “name”: “SwettiQuest”,
     “version”: “1.0.0”,
     “description”: “Swetti Boy's Quest”,
-    “main”: swettiquest.py”,
+    “main”: SwettiBot.py”,
     “author”: “Zach Kauffman”,
     “dependencies”: {}
 }
