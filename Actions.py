@@ -15,6 +15,12 @@ class Actions(commands.Cog):
         self.users = loadUserData()
         self.bot = bot
 
+    @commands.command(name='asdf')
+    async def asdf(self, ctx):
+        tosend = discord.Embed(title="trole", description="trole", color=discord.Color.red())
+        tosend.set_image(url="https://i.ya-webdesign.com/images/sad-troll-face-png-5.png")
+        await ctx.send(embed=tosend)
+
     #rap
     #makes money based on quality of current music
     @commands.cooldown(1, 1, commands.BucketType.user)
@@ -23,7 +29,7 @@ class Actions(commands.Cog):
         self.insertNewUser(ctx.author, False)
         u = self.users[ctx.author.id]
         u.addMoney(u.moneyPerShow)
-        await ctx.send('**'+ctx.author.name+'**\nYou rap really good.\ngained $' + str(u.moneyPerShow))
+        await ctx.send(embed=makeEmbed(ctx, 'You rap really good.\ngained $' + str(u.moneyPerShow)))
         saveUserData(self.users)
 
     #buy N [strain]
@@ -34,17 +40,15 @@ class Actions(commands.Cog):
     async def buy(self, ctx, *args):
         strains = parseJSON("strains")
         if len(args) == 0:  
-            tosend = ""
+            tosend = "welcome to the weed shop. here are our strains:"
             for n in strains["strains"]:
                 tosend+=("\n"+n["name"] + ": $" + str(n["price"]) + "/g")
-            await ctx.send("welcome to the weed shop. here are our strains:"+tosend)
+            await ctx.send(embed=makeEmbed(ctx, tosend))
         elif len(args) >= 2:
-            
             sname = ""
             for i in range(1, len(args)):
                 sname += (args[i] + " ")
             sname = sname[:-1]
-
             for strain in strains["strains"]:
                 if sname.upper() == strain["name"].upper():
                     self.insertNewUser(ctx.author, False)
@@ -57,10 +61,9 @@ class Actions(commands.Cog):
                         u.addMoney(-tobuy * int(strain["price"]))
                         u.addWeed(str(strain["tier"]), tobuy)
                         saveUserData(self.users)
-                        await ctx.send("you bought "+str(tobuy)+" Gs for $" + str(tobuy*int(strain["price"]))+"\nyou now have " + str(u.weed[str(strain["tier"])]) + " Gs\nyou now have $"+str(u.money))
-                    
+                        await ctx.send(embed=makeEmbed(ctx, "you bought "+str(tobuy)+" Gs for $" + str(tobuy*int(strain["price"]))+"\nyou now have " + str(u.weed[str(strain["tier"])]) + " Gs\nyou now have $"+str(u.money)))
                     else:
-                        await ctx.send("you don't have enough money for that")
+                        await ctx.send(embed=makeEmbed(ctx, "you can't afford that"))
                     break
 
     #smoke 1 g of your most potent weed to attempt to improve your music
@@ -92,24 +95,23 @@ class Actions(commands.Cog):
                 tosend += ("\nyou ran out of " + getNameOfStrainFromTier(best) + ".")
             u.improveMusic(total)
             saveUserData(self.users)   
-            await ctx.send(tosend)
+            await ctx.send(embed=makeEmbed(ctx, tosend))
         else:
-            await ctx.send("you can't produce unless you have weed")
-            return
+            await ctx.send(embed=makeEmbed(ctx, "you can't produce unless you have weed"))
         
     @commands.cooldown(1, 1, commands.BucketType.user)
     @commands.command(pass_context = True , aliases=['money', 'inventory', 'cash'])
     async def stats(self, ctx):
         self.insertNewUser(ctx.author, False)
         u = self.users[ctx.author.id]
-        tosend = "**"+ctx.author.name+"**\nYou have $"+str(u.money)+"\nYou make $"+str(u.moneyPerShow) + " per show"
+        tosend = "You have $"+str(u.money)+"\nYou make $"+str(u.moneyPerShow) + " per show"
         if u.hasWeed():
             ownedWeed = u.ownedTiersOfWeed()
             for tier in ownedWeed:
                 tosend += ("\n"+getNameOfStrainFromTier(tier) + ": " + str(u.weed[tier]) + " Gs")
         else:
             tosend += "\nyou have no weed. weak."
-        await ctx.send(tosend)
+        await ctx.send(embed=makeEmbed(ctx,tosend))
 
     def insertNewUser(self, user, save):
         if user.id not in self.users:
@@ -127,11 +129,20 @@ def parseJSON(fpath):
         data = json.load(json_file)
         return data
 
+#returns name of strain given a specific tier
 def getNameOfStrainFromTier(tier):
     strains = parseJSON("strains")['strains']
     for strain in strains:
         if str(strain['tier']) == str(tier):
             return strain['name']
+
+#returns an embed with name bolded
+#dont forget embed=makeEmbed(), not just makeEmbed() in the send()
+def makeEmbed(ctx, description):
+    return discord.Embed(title="**"+ctx.author.name+"**", description=description, color=colorFromID(ctx.author.id))
+
+def colorFromID(num):
+    return discord.Color(num%1000000)
 
 def saveUserData(users):
     json_dict = {key: user.to_dict() for key, user in users.items()}
