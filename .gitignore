@@ -1,4 +1,6 @@
 test.txt
-.env
 test.py
 userdata.txt
+./__pycache__
+*.pyc
+.env

@@ -4,6 +4,7 @@ from dataclasses_json import dataclass_json
 
 UserID = int
 Dollars = int
+Title = str
 Tier = str
 Grams = int
 LoudPack = Dict[Tier, Grams]
@@ -13,6 +14,7 @@ Music = int
 @dataclass
 class Rapper:
     uid: UserID
+    name: Title
     money: Dollars
     weed: LoudPack
     moneyPerShow: Music
