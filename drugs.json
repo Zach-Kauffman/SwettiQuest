@@ -1,0 +1,134 @@
+{
+    "strains": [
+        {   
+            "name":"Poop OG",
+            "price":1,
+            "tier":0
+        },
+        {   
+            "name":"Tropicana",
+            "price":20,
+            "tier":5
+        },
+        {   
+            "name":"Chem Dawg",
+            "price":69,
+            "tier":10
+        },
+        {   
+            "name":"New Years Eve",
+            "price":200,
+            "tier":20
+        },
+        {   
+            "name":"Lemon Sour Diesel",
+            "price":420,
+            "tier":30
+        },
+        {   
+            "name":"Platinum Girlscout",
+            "price":1000,
+            "tier":50
+        },
+        {   
+            "name":"Obama Kush",
+            "price":5000,
+            "tier":75
+        },
+        {   
+            "name":"Moon Rocks",
+            "price":25000,
+            "tier":100
+        },
+        {   
+            "name":"Triple OG Ice Cream Killa Kush",
+            "price":420000,
+            "tier":150
+        }
+    ],
+
+    "stims": [
+        {   
+            "name":"Coffee",
+            "price":1,
+            "tier":0
+        },
+        {   
+            "name":"Yerba",
+            "price":20,
+            "tier":5
+        },
+        {   
+            "name":"Monster",
+            "price":20,
+            "tier":5
+        },
+        {   
+            "name":"Modaf",
+            "price":20,
+            "tier":5
+        },
+        {   
+            "name":"Adderall",
+            "price":20,
+            "tier":5
+        },
+        {   
+            "name":"Cocaine",
+            "price":20,
+            "tier":5
+        },
+        {   
+            "name":"Meth",
+            "price":20,
+            "tier":5
+        }
+    ],
+    "boner pills": [
+        {   
+            "name":"Gas Station Select",
+            "price":10,
+            "tier":0
+        },
+        {   
+            "name":"Bonner Pillz",
+            "price":1000,
+            "tier":0
+        },
+        {   
+            "name":"Cialis",
+            "price":1000,
+            "tier":5
+        },
+        {   
+            "name":"Viagra",
+            "price":69,
+            "tier":10
+        },
+        {   
+            "name":"Wolf Urine",
+            "price":200,
+            "tier":20
+        },
+        {   
+            "name":"Gorilla Paste",
+            "price":420,
+            "tier":30
+        },
+        {   
+            "name":"Dragon's Blood",
+            "price":1000,
+            "tier":50
+        },
+        {   
+            "name":"Super Male Vitality",
+            "price":1000,
+            "tier":50
+        },
+        {   
+            "name":"Swett",
+            "price":1000,
+            "tier":50
+        }
+    ]
+}

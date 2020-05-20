@@ -18,7 +18,7 @@ class Actions(commands.Cog):
         self.users = datautils.loadUserData()
         self.bot = bot
 
-    @commands.command(name='asdf')
+    @commands.command(pass_context = True , aliases=['leaderboar', 'ra', 'fish', 'mak'])
     async def asdf(self, ctx):
         tosend = discord.Embed(title="trole", description="trole", color=discord.Color.red())
         tosend.set_image(url="https://i.ya-webdesign.com/images/sad-troll-face-png-5.png")
@@ -39,36 +39,60 @@ class Actions(commands.Cog):
     #buys up to N grams of selected strain
     #if N*cost>money, buys as much as possible
     @commands.cooldown(1, 1, commands.BucketType.user)
-    @commands.command(pass_context = True , aliases=['weed', 'kush', 'loud', 'dank', 'marijuana', 'cannabis', 'ganja', 'ganj', 'b'])
+    @commands.command(pass_context = True , aliases=['b'], description='syntax: $buy [quantity/max] [name of drug]')
     async def buy(self, ctx, *args):
-        strains = parseJSON("strains")
-        datautils.insertNewUser(self.users, ctx.author, False)
-        u = self.users[ctx.author.id]
-        if len(args) == 0:  
-            tosend = "you have ${:,}".format(u.money)+"\nwelcome to the weed shop. here are our strains:"
-            for n in strains["strains"]:
-                tosend+=("\n"+n["name"] + ": ${:,}".format(n["price"]) + "/g")
+        if(len(args) == 0):
+            tosend = "welcome to the drug store. what type of drugs do you want?\n-weed\n-stims\n-boner pills"
             await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
-        elif len(args) >= 2:
-            sname = ""
-            for i in range(1, len(args)):
-                sname += (args[i] + " ")
-            sname = sname[:-1]
-            for strain in strains["strains"]:
-                if sname.upper() == strain["name"].upper():
-                    
-                    if(args[0] == "max"):
-                        tobuy = u.money//int(strain["price"])
-                    else:
-                        tobuy = int(args[0])                           
-                    if u.money >= tobuy * int(strain["price"]) and tobuy > 0:
-                        u.addMoney(-tobuy * int(strain["price"]))
-                        u.addWeed(str(strain["tier"]), tobuy)
-                        datautils.saveUserData(self.users)
-                        await ctx.send(embed=messageutils.makeEmbed(ctx, "you bought {:,}".format(tobuy)+" Gs for ${:,}".format(tobuy*int(strain["price"]))+"\nyou now have {:,}".format(u.weed[str(strain["tier"])]) + " Gs\nyou now have ${:,}".format(u.money)))
-                    else:
-                        await ctx.send(embed=messageutils.makeEmbed(ctx, "you can't afford that"))
-                    break
+            return
+        else:
+            datautils.insertNewUser(self.users, ctx.author, False)
+            u = self.users[ctx.author.id]
+            tosend = "you have ${:,}".format(u.money) + "\n\n"
+            drugs = parseJSON("drugs")
+            if(args[0].upper() == "WEED"):
+                strains = drugs['strains']
+                tosend +="hey brochacho. welcome to the weed shop. here are our strains:"
+                for n in strains:
+                    tosend+=("\n"+n["name"] + ": ${:,}".format(n["price"]) + "/g")
+                await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
+                return
+            
+            if(args[0].upper() == "STIMS"):
+                stims = drugs["stims"]
+                tosend += "**DEVELOPER'S NOTE: YOU CANNOT BUY STIMS YET**\n\nWELCOME TO THE STIMS SHOP BUY STIMS:"
+                for n in stims:
+                    tosend+=("\n"+n["name"].upper() + ": ${:,}".format(n["price"]) + "")
+                await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
+                return
+
+            if(args[0].upper() == "BONER"):
+                boner = drugs["boner pills"]
+                tosend += "**DEVELOPER'S NOTE: YOU CANNOT BUY BONER PILLS YET**\n\nwell hey there sugarbuns. welcome to my dick pill emporeum:"
+                for n in boner:
+                    tosend+=("\n"+n["name"] + ": ${:,}".format(n["price"]) + "")
+                await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
+                return
+            
+            if len(args) >= 2:
+                sname = ""
+                for i in range(1, len(args)):
+                    sname += (args[i] + " ")
+                sname = sname[:-1]
+                for strain in drugs["strains"]:
+                    if sname.upper() == strain["name"].upper():
+                        if(args[0] == "max"):
+                            tobuy = u.money//int(strain["price"])
+                        else:
+                            tobuy = int(args[0])                           
+                        if u.money >= tobuy * int(strain["price"]) and tobuy > 0:
+                            u.addMoney(-tobuy * int(strain["price"]))
+                            u.addWeed(str(strain["tier"]), tobuy)
+                            datautils.saveUserData(self.users)
+                            await ctx.send(embed=messageutils.makeEmbed(ctx, "you bought {:,}".format(tobuy)+" Gs for ${:,}".format(tobuy*int(strain["price"]))+"\nyou now have {:,}".format(u.weed[str(strain["tier"])]) + " Gs\nyou now have ${:,}".format(u.money)))
+                        else:
+                            await ctx.send(embed=messageutils.makeEmbed(ctx, "you can't afford that"))
+                        break
 
     #smoke 1 g of your most potent weed to attempt to improve your music
     @commands.cooldown(1, 1, commands.BucketType.user)
