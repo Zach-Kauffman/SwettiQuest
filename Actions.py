@@ -120,6 +120,7 @@ class Actions(commands.Cog):
     @commands.command()
     async def leaderboard(self, ctx):
         topPlayers = []
+        exclamations = ["Wow", "Spectacular", "Stupendous", "Epic", "Nice", "Awesome"]
         print(len(self.users.items()))
         for uid, player in self.users.items():
             if player not in topPlayers:
@@ -138,9 +139,9 @@ class Actions(commands.Cog):
         topPlayers.sort(key=lambda x:x[1], reverse=True)
         for p in topPlayers:
             #tosend += "\n" + client.fetch_user(p.uid) + ": $" + p.money
-            tosend += "\n" + str(i) +": " + p[0] + " has this much money: ${:,}".format(p[1])
+            tosend += "\n" + str(i) +": **" + p[0] + "** has ${:,}".format(p[1])
             i += 1
-        tosend += "\nThere are " + str(len(self.users.items())) + " current players. **Wow!**"
+        tosend += "\nThere are " + str(len(self.users.items())) + " current players. **"+random.choice(exclamations)+"!**"
         await ctx.send(embed=messageutils.makeEmbed(ctx,tosend))
 
 
