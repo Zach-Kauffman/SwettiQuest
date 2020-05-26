@@ -24,6 +24,8 @@ def loadUserData():
 
 def insertNewUser(users, user, save):
         if user.id not in users:
-            users[user.id] = Rapper(uid=user.id, name=user.name, money=0, drugs={'weed':{},'stims':{},'boner':{}}, moneyPerShow=1)
+            users[user.id] = Rapper(uid=user.id, name=user.name, money=20.00, drugs={'weed':{},'stims':{},'boner':{}}, moneyPerShow=1)
             if save:
                 saveUserData(users)
+            return True
+        return False
