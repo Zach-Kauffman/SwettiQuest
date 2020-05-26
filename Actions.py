@@ -12,11 +12,29 @@ from discord.ext.commands.cooldowns import BucketType
 import datautils
 import messageutils
 
-
 class Actions(commands.Cog):
     def __init__(self, bot):
         self.users = datautils.loadUserData()
         self.bot = bot
+        self.cooldown = commands.CooldownMapping.from_cooldown(1.0, 3.5, commands.BucketType.user)
+
+    def cd(self, ctx, userCooldown):
+        bucket = self.cooldown.get_bucket(ctx.message)
+        if(userCooldown == None):
+            userCooldown = 0
+        print(userCooldown)
+        retry_after = bucket.update_rate_limit()
+        if(retry_after):
+            retry_after -= float(userCooldown)
+        else:
+            retry_after = 0
+        print(retry_after)
+        if retry_after > 0:
+            # you're rate limited
+            # helpful message here
+            return "Actions on cooldown. Please wait " + str(round(retry_after, 2)) + " seconds"
+        # you're not rate limited
+        return None
 
     @commands.command(pass_context = True , aliases=['leaderboar', 'ra', 'fish', 'mak'])
     async def asdf(self, ctx):
@@ -26,22 +44,22 @@ class Actions(commands.Cog):
 
     #rap
     #makes money based on quality of current music
-    @commands.cooldown(1, 1, commands.BucketType.user)
     @commands.command(pass_context = True , aliases=['r'], description='Rap to make money! The higher you are and the better your music the more money you will make')
     async def rap(self, ctx):
         datautils.insertNewUser(self.users, ctx.author, False)
         u = self.users[ctx.author.id]
-        u.addMoney(u.moneyPerShow)
-        await ctx.send(embed=messageutils.makeEmbed(ctx, 'You rap really good.\ngained ${:,}'.format(u.moneyPerShow)))
-        datautils.saveUserData(self.users)
+        cd = self.cd(ctx, u.bestTierOfDrug('stims'))
+        if(cd == None):
+            u.addMoney(u.moneyPerShow)
+            await ctx.send(embed=messageutils.makeEmbed(ctx, 'You rap really good.\ngained ${:,}'.format(u.moneyPerShow)))
+            datautils.saveUserData(self.users)
+        else:
+            await ctx.send(cd)
 
-    #buy N [strain]
-    #buys up to N grams of selected strain
-    #if N*cost>money, buys as much as possible
     @commands.cooldown(1, 1, commands.BucketType.user)
-    @commands.command(pass_context = True , aliases=['b'], description='syntax: $buy [quantity/max] [name of drug]')
-    async def buy(self, ctx, *args):
-        if(len(args) == 0):
+    @commands.command(pass_context = True , aliases=['s', 'drugs'], description='Weed: needed to produce\nStims: one-time upgrade to reduce all command cooldowns.\nBoner Pills: **NOT IMPLEMENTED**')
+    async def shop(self, ctx, *category):
+        if(len(category) == 0):
             tosend = "welcome to the drug store. what type of drugs do you want?\n-weed\n-stims\n-boner pills"
             await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
             return
@@ -50,81 +68,94 @@ class Actions(commands.Cog):
             u = self.users[ctx.author.id]
             tosend = "you have ${:,}".format(u.money) + "\n\n"
             drugs = parseJSON("drugs")
-            if(args[0].upper() == "WEED"):
-                strains = drugs['strains']
+            if(category[0].upper() == "WEED"):
+                strains = drugs['weed']
                 tosend +="hey brochacho. welcome to the weed shop. here are our strains:"
                 for n in strains:
                     tosend+=("\n"+n["name"] + ": ${:,}".format(n["price"]) + "/g")
                 await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
                 return
             
-            if(args[0].upper() == "STIMS"):
+            if(category[0].upper() == "STIMS"):
                 stims = drugs["stims"]
-                tosend += "**DEVELOPER'S NOTE: YOU CANNOT BUY STIMS YET**\n\nWELCOME TO THE STIMS SHOP BUY STIMS:"
+                tosend += "WELCOME TO THE STIMS SHOP BUY STIMS:\n"
+                owned = u.ownedTiersOfDrug('stims')
                 for n in stims:
-                    tosend+=("\n"+n["name"].upper() + ": ${:,}".format(n["price"]) + "")
+                    if (str(n["tier"]) in owned):
+                        tosend += "~~"
+                    tosend += "\n"+n["name"].upper() + ": ${:,}".format(n["price"]) + "\n--Reduces all cooldowns by " + str(n['tier'])+" sec\n"
+                    if (str(n["tier"]) in owned):
+                        tosend += "~~***YOU ALREADY OWN THIS STIM***"
                 await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
                 return
 
-            if(args[0].upper() == "BONER"):
+            if(category[0].upper() == "BONER"):
                 boner = drugs["boner pills"]
-                tosend += "**DEVELOPER'S NOTE: YOU CANNOT BUY BONER PILLS YET**\n\nwell hey there sugarbuns. welcome to my dick pill emporeum:"
+                tosend += "**DEVELOPER'S NOTE: BONER PILLS DONT DO ANYTHING YET**\n\nwell hey there sugarbuns. welcome to my dick pill emporeum:"
                 for n in boner:
                     tosend+=("\n"+n["name"] + ": ${:,}".format(n["price"]) + "")
                 await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
                 return
-            
-            if len(args) >= 2:
-                sname = ""
-                for i in range(1, len(args)):
-                    sname += (args[i] + " ")
-                sname = sname[:-1]
-                for strain in drugs["strains"]:
-                    if sname.upper() == strain["name"].upper():
-                        if(args[0] == "max"):
-                            tobuy = u.money//int(strain["price"])
-                        else:
-                            tobuy = int(args[0])                           
-                        if u.money >= tobuy * int(strain["price"]) and tobuy > 0:
-                            u.addMoney(-tobuy * int(strain["price"]))
-                            u.addWeed(str(strain["tier"]), tobuy)
-                            datautils.saveUserData(self.users)
-                            await ctx.send(embed=messageutils.makeEmbed(ctx, "you bought {:,}".format(tobuy)+" Gs for ${:,}".format(tobuy*int(strain["price"]))+"\nyou now have {:,}".format(u.weed[str(strain["tier"])]) + " Gs\nyou now have ${:,}".format(u.money)))
-                        else:
-                            await ctx.send(embed=messageutils.makeEmbed(ctx, "you can't afford that"))
-                        break
+
+    #buy N [strain]
+    #buys up to N grams of selected strain
+    #if N*cost>money, buys as much as possible
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    @commands.command(pass_context = True , aliases=['b'], description='syntax: $buy [quantity/max] [name of drug]')
+    async def buy(self, ctx, quant, *, name):
+        datautils.insertNewUser(self.users, ctx.author, False)
+        u = self.users[ctx.author.id]
+        drugs = parseJSON("drugs")
+        for drug in drugs:
+            for d in drugs[drug]:
+                if name.upper() == d['name'].upper():
+                    if(quant == "max"):
+                        tobuy = u.money//int(d["price"])
+                    else:
+                        tobuy = int(quant)                           
+                    if u.money >= tobuy * int(d["price"]) and tobuy > 0:
+                        u.addMoney(-tobuy * int(d["price"]))
+                        u.addDrug(drug, str(d["tier"]), tobuy)
+                        datautils.saveUserData(self.users)
+                        await ctx.send(embed=messageutils.makeEmbed(ctx, "you bought {:,}".format(tobuy)+" Gs for ${:,}".format(tobuy*int(d["price"]))+"\nyou now have {:,}".format(u.drugs[drug][str(d["tier"])]) + " Gs\nyou now have ${:,}".format(u.money)))
+                    else:
+                        await ctx.send(embed=messageutils.makeEmbed(ctx, "you can't afford that"))
+                    break
 
     #smoke 1 g of your most potent weed to attempt to improve your music
-    @commands.cooldown(1, 1, commands.BucketType.user)
     @commands.command(pass_context = True , aliases=['p'], description='hop in the stu and make some beats. improves the quality of your music so you can make more money per show. better weed = better results')
     async def produce(self, ctx):
         datautils.insertNewUser(self.users, ctx.author, False)
         u = self.users[ctx.author.id]
-        if u.hasWeed():
-            best = u.bestWeed()
-            improve = random.randint(0,100)
-            banger = random.randint(0,100)
-            insane = random.randint(0,100)
-            total = 0
-            if (improve + best) >= 90:
-                total += (best+1)
-                tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nyou make a good song. +${:,}".format(total) + " per show")
-            if (banger + best) >= 99:
-                total += ((best+1)*7)
-                tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nthat " + getNameOfStrainFromTier(best) + " hit just right and you make an absolute banger. +${:,}".format(total) + " per show")
-            if (insane + best) >= 200:
-                total += (best*best)
-                tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nyou make one of the greatest songs of all time off that " + getNameOfStrainFromTier(best) + ". +${:,}".format(total) + " per show")
-            u.addWeed(str(best), -1)
-            if total==0:
-                tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nyou don't make anything worthwhile")
-            if(u.weed[str(best)] == 0):
-                tosend += ("\nyou ran out of " + getNameOfStrainFromTier(best) + ".")
-            u.improveMusic(total)
-            datautils.saveUserData(self.users)   
-            await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
-        else:
+        cd = self.cd(ctx, u.bestTierOfDrug('stims'))
+        if(cd == None):
+            if u.hasDrug('weed'):
+                best = u.bestTierOfDrug('weed')
+                improve = random.randint(0,100)
+                banger = random.randint(0,100)
+                insane = random.randint(0,100)
+                total = 0
+                if (improve + best) >= 90:
+                    total += (best+1)
+                    tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nyou make a good song. +${:,}".format(total) + " per show")
+                if (banger + best) >= 99:
+                    total += ((best+1)*7)
+                    tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nthat " + getNameOfStrainFromTier(best) + " hit just right and you make an absolute banger. +${:,}".format(total) + " per show")
+                if (insane + best) >= 200:
+                    total += (best*best)
+                    tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nyou make one of the greatest songs of all time off that " + getNameOfStrainFromTier(best) + ". +${:,}".format(total) + " per show")
+                u.addDrug('weed', str(best), -1)
+                if total==0:
+                    tosend = ("you smoke a G of " + getNameOfStrainFromTier(best) + "\nyou don't make anything worthwhile")
+                if(u.drugs['weed'][str(best)] == 0):
+                    tosend += ("\nyou ran out of " + getNameOfStrainFromTier(best) + ".")
+                u.improveMusic(total)
+                datautils.saveUserData(self.users)   
+                await ctx.send(embed=messageutils.makeEmbed(ctx, tosend))
+        elif not u.hasDrug('weed'):
             await ctx.send(embed=messageutils.makeEmbed(ctx, "you can't produce unless you have weed"))
+        else:
+            await ctx.send(cd)
         
     @commands.cooldown(1, 1, commands.BucketType.user)
     @commands.command(pass_context = True, aliases=['money', 'inventory', 'cash'])
@@ -132,10 +163,10 @@ class Actions(commands.Cog):
         datautils.insertNewUser(self.users, ctx.author, False)
         u = self.users[ctx.author.id]
         tosend = "You have ${:,}".format(u.money)+"\nYou make ${:,}".format(u.moneyPerShow) + " per show"
-        if u.hasWeed():
-            ownedWeed = u.ownedTiersOfWeed()
+        if u.hasDrug('weed'):
+            ownedWeed = u.ownedTiersOfDrug('weed')
             for tier in ownedWeed:
-                tosend += ("\n"+getNameOfStrainFromTier(tier) + ": {:,}".format(u.weed[tier])+ " Gs")
+                tosend += ("\n"+getNameOfStrainFromTier(tier) + ": {:,}".format(u.drugs['weed'][tier])+ " Gs")
         else:
             tosend += "\nyou have no weed. weak."
         await ctx.send(embed=messageutils.makeEmbed(ctx,tosend))
@@ -181,7 +212,9 @@ def parseJSON(fpath):
 
 #returns name of strain given a specific tier
 def getNameOfStrainFromTier(tier):
-    strains = parseJSON("strains")['strains']
+    strains = parseJSON("drugs")['weed']
     for strain in strains:
-        if str(strain['tier']) == str(tier):
+        if float(strain['tier']) == float(tier):
             return strain['name']
+    return "nothing. you have no weed."
+

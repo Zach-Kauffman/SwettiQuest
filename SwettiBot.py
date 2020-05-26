@@ -7,7 +7,7 @@ load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 
 initial_extensions = ['Actions', 'Help']
-bot = commands.Bot(command_prefix='$', description='SwettiQuest: Getting Cheefy with the Lads Edition')
+bot = commands.Bot(command_prefix='$', description='SwettiQuest Alpha 0.2')
 
 if __name__ == '__main__':
     for extension in initial_extensions:

@@ -4,3 +4,6 @@ userdata.txt
 ./__pycache__
 *.pyc
 .env
+unfuck.py
+swag.txt
+userdata.json

@@ -3,12 +3,13 @@ from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
 UserID = int
-Dollars = int
+Dollars = float
 Title = str
 Tier = str
-Grams = int
-LoudPack = Dict[Tier, Grams]
-Music = int
+Quant = float
+DrugName = str
+DrugBag = Dict[DrugName, Dict[Tier, Quant]]
+Music = float
 
 @dataclass_json
 @dataclass
@@ -16,39 +17,41 @@ class Rapper:
     uid: UserID
     name: Title
     money: Dollars
-    weed: LoudPack
+    drugs: DrugBag
     moneyPerShow: Music
 
     def addMoney(self, dollaz):
         self.money += dollaz
 
-    def addWeed(self, tier:int, grams):
-        if(tier in self.weed):
-            self.weed[tier]+=grams
+    def addDrug(self, category:str, tier:int, quant):
+        if(self.drugs[category]):
+            drug = self.drugs[category]
+            if(tier in drug):
+                self.drugs[category][tier]+=quant
         else:
-            self.weed[tier]=grams
+            self.drugs[category][tier]=quant
 
-    def hasWeed(self):
-        for tier in self.weed:
-            if self.weed[tier] > 0:
+    def hasDrug(self, category):
+        for tier in self.drugs[category]:
+            if self.drugs[category][tier] > 0:
                 return True
         return False
 
-    def ownedTiersOfWeed(self):
-        strains = []
-        for tier in self.weed:
-            if self.weed[tier] > 0:
-                strains.append(tier)
-        return strains
+    def ownedTiersOfDrug(self, category):
+        tiers = []
+        for tier in self.drugs[category]:
+            if self.drugs[category][tier] > 0:
+                tiers.append(tier)
+        return tiers
 
 
-    def bestWeed(self):
-        if self.hasWeed():
-            bestweed = 0
-            for tier in self.weed:
-                if int(tier) > bestweed and self.weed[tier] > 0:
-                    bestweed = int(tier)
-            return bestweed
+    def bestTierOfDrug(self, category):
+        if self.hasDrug(category):
+            bestdrug = 0.0
+            for tier in self.drugs[category]:
+                if float(tier) > bestdrug and self.drugs[category][tier] > 0:
+                    bestdrug = float(tier)
+            return bestdrug
         return None
 
     def improveMusic(self, amount):
